@@ -233,10 +233,29 @@ constexpr static inline auto
 
 static_assert(combination == type<Combination>);
 ~~~
+Note that since we're dealing with values, we get template types for free, in the form of functions: 
+~~~ cpp
+template <class T>
+using Combination =
+    std::variant<T,
+                 std::tuple<T, char>,
+                 std::tuple<T, char, double>>;
+
+constexpr static inline auto 
+    combination = [](auto a) {
+        return a 
+             | a & Char
+             | a & Char & Double;
+    };
+
+static_assert(combination(Double) == type_t<Combination<double>>>);
+static_assert(combination(Char) == type_t<Combination<char>>>);
+static_assert(combination(Int) == type_t<Combination<int>>>);
+~~~
 
 ## Conclusion
 
-Our little experiment is a good example of what you can achieve with a little bit of metaprogramming, but although we met our initial goal, the result is somewhat unsatisfactory. There is no support for nested structures, function types or recursive types. We also didn't pay attention at what actually instanciating these types looks like (hint: it can get hairy), or how to use them.
+Our little experiment is a good example of what you can achieve with a little bit of metaprogramming, but although we met our initial goal, the result is somewhat unsatisfactory. There is no support for nested structures, function types or recursive types. We also didn't pay attention at what actually instanciating these types looks like, or how to use them.
 
 We'll address those concerns, and probably more, in future articles. In the meantime, you can get the code [on my Github](https://github.com/de-passage/algebraic-datatypes.cpp).  
   
