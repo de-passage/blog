@@ -5,7 +5,8 @@ date:   2020-05-09 12:11:28 +0800
 tags: c++ metaprogramming algebraic-datatypes
 ---
 
-While playing with Haskell, I have been intrigued by how easy it is to define and use [algebraic data types](https://en.wikipedia.org/wiki/Algebraic_data_type). Although the template system makes it fairly straightforward to define this kind of types in C++ using `std::tuple` and `std::variant`, I wanted to experiment with the idea of providing a simple way of manipulating algrebraic data types, free of the clutter of templates.
+While playing with Haskell, I have been intrigued by how easy it is to define and use [algebraic data types](https://en.wikipedia.org/wiki/Algebraic_data_type). Although the template system makes it fairly straightforward to define this kind of types in C++ using `std::tuple` and `std::variant`, I wanted to experiment with the idea of providing a simple way of manipulating algrebraic data types, free of the clutter of templates.  
+The code in this article has been tested with Clang 9.0.0.
 
 ## Design goals
 
