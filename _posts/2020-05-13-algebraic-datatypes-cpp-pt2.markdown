@@ -23,7 +23,7 @@ using HigherOrder = ev((Char -> Int) -> Bool);
 
 ## Single argument functions
 Before we start, let's think about what the syntax presented above entails. `ev` is the macro we defined in [part 1]({% post_url 2020-05-09-algebraic-datatypes-cpp %}), it expects a value of our type container type: `type_t<T>`.
-The rest is simply operator overloading: `operator,` and `operator->`. The former is very straightforward, but the latter has some stringent restrictions attached to its use. It must be a non-static member function that returns either a pointer or a value of a type providing a valid overload of `operator->`. Moreover, and this is the most inconvenient in our case, the identifier on the right side must refer to a member of the type returned by the call to `operator->`. This means that the following syntax cannot be defined in C++: 
+The rest is simply operator overloading: `operator,` and `operator->`. The former is very straightforward, but the latter has some stringent restrictions attached to its use. It must be a non-static member function that returns either a pointer or a value of a type providing a valid overload of `operator->`. Moreover, and this is very inconvenient in our case, the identifier on the right side must refer to a member of the type returned by the call to `operator->`. This means that the following syntax cannot be defined in C++: 
 ```cpp
 constexpr static inline auto InvalidSyntax = Int -> (Char | Bool);
 ```
@@ -192,7 +192,7 @@ struct adapter_t : Aliases { // This won't work
 };
 ```
 Of course, all our functions using `type_t`, `adapter_t` and `argument_pack_t` need to be adapted. I won't provide the code here as it is mostly bookkeeping.  
-The only this to worry about is the case where the user provides `type_t` instances with different aliases. The most obvious (and in my opinion the most sensible) option is to simply disallow this case and force the user to use the same alias type throughout the whole program. It is easy to provide utilities to swap the alias parameter if desired[^3].
+The only this to worry about is the case where the user provides `type_t` instances with different aliases (for example `type<T, alias_list_1> -> type<U, alias_list_2>`, or worse different aliases in a function with multiple parameters). The most obvious (and in my opinion the most sensible) option is to simply disallow this case and force the user to use the same alias type throughout the whole program. It is easy to provide utilities to swap the alias parameter if desired[^3].
 
 This choice has the perverse effect that the above code cannot be used as is. Let's think about what the definition of an alias would look like:
 ``` cpp
@@ -200,7 +200,7 @@ struct my_aliases {
     constexpr static inline type_t</* what comes here ? */, my_aliases> Int{};
 };
 ```
-It may be tempting to write `int` in place of the comment, but then the result of `type<T> -> Int` would always be `int`!
+It may be tempting to write `int` in place of the comment, but then the result of `type<T> -> Int` would be `int` rather than `function<int(T)>`!
 We need to somehow communicate to our alias structure what the arguments of the function were. 
 A first intuition could be to make `my_aliases` a variadic template structure to communicate the parameter list, but then we'd have another problem.
 ``` cpp
@@ -282,7 +282,7 @@ struct adapter_t : make_base_class<Config, Parameters...> {
 And with this, our EDSL for function types is complete! All we have to do is list the aliases we want to use in the `aliases` substructure and give the `config` one to `type_t`, and we can have whatever return type we want (within the restrictions of the C++ syntax obviously).
 
 ## An alternative syntax
-The last part was quite a bit of work for such a minor detail, but I have never seen `operator->` exploited in this way so I thought it would be a nice to explain how it can be done.
+The last part was quite a bit of work for such a minor detail, but I have never seen `operator->` exploited in this way so I thought it would be nice to explain how it can be done.
 
 If we're willing to depart a bit more from the Haskell syntax, we could go another route and define a pseudo operator to do the same job. This has the added benefit of enabling normal expressions in the return type.  
 We'll use an imaginary operator `-D>`, but anything consisting of a valid C++ identifier surrounded by binary operators could do.
@@ -310,7 +310,7 @@ constexpr partially_applied_function_pseudo_operator<C, Ts...>
     return {};
 }
 ```
-We then treat the application of this intermediary structure to a `type_t`:
+We then treat the application of this intermediary structure as a `type_t`:
 ``` cpp
 template<class C, class R, class... Ts>
 constexpr type_t<std::function<R(Ts...)>, C>
