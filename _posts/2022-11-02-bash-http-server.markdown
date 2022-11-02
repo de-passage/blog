@@ -93,6 +93,7 @@ function unsubscribe() {
 # This will guarantee that we're running the unsubscription procedure when we hit Ctrl+C to exit the script
 trap unsubscribe EXIT
 
+keep_running="true"
 while [[ "$keep_running" == true ]]; do 
   # The sed command will deletes everything from the first line to the first empty line, inclusive
   nc -l -p "$netcat_port" </path/to/response.http | sed '1,/^$/d' | jq '.' # process the events as needed here
